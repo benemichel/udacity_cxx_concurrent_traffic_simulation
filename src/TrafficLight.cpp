@@ -20,7 +20,7 @@ T MessageQueue<T>::receive()
     T message = std::move(_queue.back());
     // remove
     _queue.pop_back();
-    return message:
+    return message;
 }
 
 
@@ -80,7 +80,8 @@ void TrafficLight::cycleThroughPhases()
     // to the message queue using move semantics. The cycle duration should be a random value between 4 and 6 seconds. 
     // Also, the while-loop should use std::this_thread::sleep_for to wait 1ms between two cycles. 
 
-    std::default_random_engine gen();
+    std::random_device seed;
+    std::default_random_engine gen(seed());
     std::uniform_int_distribution<int> distribution(4000, 6000);
     auto randomDuration = distribution(gen);
 
