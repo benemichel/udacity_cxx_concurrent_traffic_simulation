@@ -4,16 +4,26 @@
 
 /* Implementation of class "MessageQueue" */
 
-/* 
+
 template <typename T>
 T MessageQueue<T>::receive()
 {
     // FP.5a : The method receive should use std::unique_lock<std::mutex> and _condition.wait() 
     // to wait for and receive new messages and pull them from the queue using move semantics. 
     // The received object should then be returned by the receive function. 
+    std::unique_lock<std::mutex> lock(_mutex);
+    _condition.wait(lock, [this] {
+        return !_queue.empty();
+    });
+
+    // get
+    T message = std::move(_queue.back());
+    // remove
+    _queue.pop_back();
+    return message:
 }
 
-*/
+
 
 template <typename T>
 void MessageQueue<T>::send(T &&msg)
@@ -34,11 +44,20 @@ TrafficLight::TrafficLight()
     _currentPhase = TrafficLightPhase::red;
 }
 
+*/
 void TrafficLight::waitForGreen()
 {
     // FP.5b : add the implementation of the method waitForGreen, in which an infinite while-loop 
     // runs and repeatedly calls the receive function on the message queue. 
     // Once it receives TrafficLightPhase::green, the method returns.
+
+    while (true) {
+        TrafficLightPhase phase = _messages.receive();
+
+        if (phase == TrafficLightPhase::green) {
+            return;
+        }
+    }
 }
 
 TrafficLightPhase TrafficLight::getCurrentPhase()
@@ -46,7 +65,7 @@ TrafficLightPhase TrafficLight::getCurrentPhase()
     return _currentPhase;
 }
 
-*/
+
 void TrafficLight::simulate()
 {
     // FP.2b XXX: Finally, the private method „cycleThroughPhases“ should be started in a thread when t
