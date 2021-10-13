@@ -1,6 +1,8 @@
 #include <iostream>
 #include <random>
 #include "TrafficLight.h"
+#include <mutex>
+#include <thread>
 
 /* Implementation of class "MessageQueue" */
 
@@ -30,7 +32,7 @@ void MessageQueue<T>::send(T &&msg)
 {
     // FP.4a : The method send should use the mechanisms std::lock_guard<std::mutex> 
     // as well as _condition.notify_one() to add a new message to the queue and afterwards send a notification.
-    std::lock_guard<std::mutex> lockGuard(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     _queue.push_front(std::move(msg));
     _condition.notify_one();
 }
@@ -55,6 +57,8 @@ void TrafficLight::waitForGreen()
         if (phase == TrafficLightPhase::green) {
             return;
         }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 }
 
@@ -85,28 +89,31 @@ void TrafficLight::cycleThroughPhases()
     std::uniform_int_distribution<int> distribution(4000, 6000);
     auto randomDuration = distribution(gen);
 
+    std::cout << "randomDuration: " << randomDuration << "\n";
+
     auto start = std::chrono::steady_clock::now();
 
     // inifinite loop
     while(true) {
         auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds> (now - start).count();
 
         if (elapsed > randomDuration) {
+            std::cout << "switch color" << "\n";
             if (_currentPhase == TrafficLightPhase::green) {
                 _currentPhase = TrafficLightPhase::red;
             }
             else {
                 _currentPhase = TrafficLightPhase::green;
             }
+
+             
+            _messages.send(std::move(TrafficLightPhase(_currentPhase)));
+            start = std::chrono::steady_clock::now();
         }
 
-        _messages.send(std::move(TrafficLightPhase(_currentPhase)));
-        start = std::chrono::steady_clock::now();
-
-    }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    } 
 
 }
 
