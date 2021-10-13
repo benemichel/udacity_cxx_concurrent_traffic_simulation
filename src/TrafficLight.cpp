@@ -84,7 +84,7 @@ void TrafficLight::cycleThroughPhases()
 
     std::random_device seed;
     std::default_random_engine gen(seed());
-    std::uniform_int_distribution<int> distribution(4000, 6000);
+    std::uniform_real_distribution<int> distribution(4000, 6000);
     auto randomDuration = distribution(gen);
 
     std::cout << "randomDuration: " << randomDuration << "\n";
